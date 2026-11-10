@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<!-- saved from url=(0085)file:///C:/Users/AIML%20LAB/Downloads/transport_management_prototype%20(1)%20(1).html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transport Management System</title>
+<link href="./Transport Management System_files/css2" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #1e2430;
+    --accent: #f5a623;
+    --accent2: #00e5ff;
+    --text: #e8ecf4;
+    --muted: #6b7587;
+    --success: #3ddc84;
+    --danger: #ff5252;
+    --driver: #b388ff;
+    --vehicle: #69f0ae;
+    --route: #f5a623;
+    --trip: #40c4ff;
+    --passenger: #ff80ab;
+    --booking: #ea80fc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid lines background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+
+  /* HEADER */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
+    position: sticky;
+    top: 0;
+    background: rgba(10,12,16,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.5px;
+  }
+  .logo-text span { color: var(--accent); }
+  .badge {
+    background: rgba(245,166,35,0.12);
+    border: 1px solid rgba(245,166,35,0.3);
+    color: var(--accent);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* NAV */
+  nav {
+    display: flex;
+    gap: 4px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  .nav-btn {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--muted);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-btn:hover { color: var(--text); border-color: var(--border); background: var(--surface); }
+  .nav-btn.active { color: var(--text); background: var(--surface2); border-color: var(--border); }
+  .nav-btn .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* PAGES */
+  .page { display: none; padding: 32px 0; }
+  .page.active { display: block; }
+
+  /* DASHBOARD */
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .page-sub { color: var(--muted); font-size: 13px; margin-bottom: 32px; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--c);
+  }
+  .stat-label { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800; color: var(--c); }
+  .stat-desc { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media(max-width:768px){ .dashboard-grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-body { padding: 20px; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td { padding: 12px 14px; }
+  .id-cell {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  /* CHIP */
+  .chip {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:600px){ .form-grid { grid-template-columns: 1fr; } }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; }
+  .form-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-input option { background: var(--surface2); }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-danger { background: rgba(255,82,82,0.15); color: var(--danger); border: 1px solid rgba(255,82,82,0.3); }
+  .btn-danger:hover { background: rgba(255,82,82,0.25); }
+  .btn-sm { padding: 5px 12px; font-size: 11px; }
+  .form-actions { margin-top: 20px; display: flex; gap: 10px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--success);
+    color: #000;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { background: var(--danger); color: #fff; }
+
+  /* SECTION */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  /* TRIP CARD */
+  .trip-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    transition: border-color 0.2s;
+  }
+  .trip-card:hover { border-color: rgba(245,166,35,0.3); }
+  .trip-route { flex: 1; }
+  .route-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .route-line .arrow { color: var(--accent); font-size: 18px; }
+  .trip-meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .trip-info { display: flex; gap: 20px; }
+  .trip-info-item { text-align: center; }
+  .trip-info-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .trip-info-val { font-size: 14px; font-weight: 600; color: var(--accent2); }
+
+  /* SCHEMA VIEW */
+  .schema-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+  .schema-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .schema-head {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .schema-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .schema-body { padding: 8px 0; }
+  .schema-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 18px;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .schema-row:last-child { border-bottom: none; }
+  .col-name { color: var(--text); font-weight: 500; }
+  .col-type { color: var(--muted); font-size: 11px; }
+  .col-key {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .pk { background: rgba(245,166,35,0.2); color: var(--accent); border: 1px solid rgba(245,166,35,0.3); }
+  .fk { background: rgba(0,229,255,0.12); color: var(--accent2); border: 1px solid rgba(0,229,255,0.2); }
+  .uq { background: rgba(61,220,132,0.12); color: var(--success); border: 1px solid rgba(61,220,132,0.2); }
+
+  /* SQL CONSOLE */
+  .sql-box {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .sql-toolbar {
+    padding: 10px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sql-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .sql-code {
+    padding: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    overflow-x: auto;
+    color: #8be9fd;
+  }
+  .kw { color: #ff79c6; }
+  .fn { color: #50fa7b; }
+  .str { color: #f1fa8c; }
+  .num { color: #bd93f9; }
+  .cm { color: #6272a4; font-style: italic; }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
+
+  /* DIVIDER */
+  hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">🚌</div>
+        <div class="logo-text">Transport<span>MS</span></div>
+      </div>
+      <div class="badge">Prototype v1.0</div>
+    </div>
+    <nav>
+      <button class="nav-btn active" onclick="showPage(&#39;dashboard&#39;)"><span class="dot" style="background:#f5a623"></span>Dashboard</button>
+      <button class="nav-btn" onclick="showPage(&#39;drivers&#39;)"><span class="dot" style="background:#b388ff"></span>Drivers</button>
+      <button class="nav-btn" onclick="showPage(&#39;vehicles&#39;)"><span class="dot" style="background:#69f0ae"></span>Vehicles</button>
+      <button class="nav-btn" onclick="showPage(&#39;routes&#39;)"><span class="dot" style="background:#f5a623"></span>Routes</button>
+      <button class="nav-btn" onclick="showPage(&#39;trips&#39;)"><span class="dot" style="background:#40c4ff"></span>Trips</button>
+      <button class="nav-btn" onclick="showPage(&#39;passengers&#39;)"><span class="dot" style="background:#ff80ab"></span>Passengers</button>
+      <button class="nav-btn" onclick="showPage(&#39;bookings&#39;)"><span class="dot" style="background:#ea80fc"></span>Bookings</button>
+      <button class="nav-btn" onclick="showPage(&#39;schema&#39;)"><span class="dot" style="background:#aaa"></span>Schema</button>
+      <button class="nav-btn" onclick="showPage(&#39;sql&#39;)"><span class="dot" style="background:#50fa7b"></span>SQL</button>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-title">Dashboard</div>
+    <div class="page-sub">Transport Management System — Live Overview</div>
+
+    <div class="stats-grid">
+      <div class="stat-card" style="--c:var(--driver)">
+        <div class="stat-label">Drivers</div>
+        <div class="stat-value" id="stat-drivers">2</div>
+        <div class="stat-desc">Registered drivers</div>
+      </div>
+      <div class="stat-card" style="--c:var(--vehicle)">
+        <div class="stat-label">Vehicles</div>
+        <div class="stat-value" id="stat-vehicles">2</div>
+        <div class="stat-desc">Fleet count</div>
+      </div>
+      <div class="stat-card" style="--c:var(--route)">
+        <div class="stat-label">Routes</div>
+        <div class="stat-value" id="stat-routes">2</div>
+        <div class="stat-desc">Active routes</div>
+      </div>
+      <div class="stat-card" style="--c:var(--trip)">
+        <div class="stat-label">Trips</div>
+        <div class="stat-value" id="stat-trips">2</div>
+        <div class="stat-desc">Scheduled trips</div>
+      </div>
+      <div class="stat-card" style="--c:var(--passenger)">
+        <div class="stat-label">Passengers</div>
+        <div class="stat-value" id="stat-passengers">2</div>
+        <div class="stat-desc">Registered</div>
+      </div>
+      <div class="stat-card" style="--c:var(--booking)">
+        <div class="stat-label">Bookings</div>
+        <div class="stat-value" id="stat-bookings">2</div>
+        <div class="stat-desc">Total bookings</div>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🗺 TripDetails View</div>
+        </div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Driver</th><th>Vehicle</th><th>Source</th><th>Destination</th><th>Date</th></tr></thead>
+              <tbody id="dash-trips"><tr><td>Ravi</td><td>TN01AB1234</td><td>Chennai</td><td>Trichy</td><td>2025-02-06</td></tr><tr><td>Kumar</td><td>TN02CD5678</td><td>Madurai</td><td>Coimbatore</td><td>2025-02-07</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🎫 Recent Bookings</div>
+        </div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Passenger</th><th>Trip</th><th>Seat</th><th>Date</th></tr></thead>
+              <tbody id="dash-bookings"><tr><td class="id-cell">#1</td><td>Arun</td><td>#301</td><td>1</td><td>2025-02-01</td></tr><tr><td class="id-cell">#2</td><td>Bala</td><td>#301</td><td>2</td><td>2025-02-01</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DRIVERS -->
+  <div class="page" id="page-drivers">
+    <div class="section-header">
+      <div>
+        <div class="page-title">Drivers</div>
+        <div class="page-sub">Manage registered drivers</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:28px">
+      <div class="card-header"><div class="card-title">➕ Add Driver</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Driver ID</label><input class="form-input" id="drv-id" type="number" placeholder="e.g. 3"></div>
+          <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="drv-name" placeholder="Full name"></div>
+          <div class="form-group"><label class="form-label">License No</label><input class="form-input" id="drv-lic" placeholder="e.g. LIC789"></div>
+          <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="drv-phone" placeholder="10 digit number"></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary" onclick="addDriver()">Add Driver</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🚗 Driver List</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>License No</th><th>Phone</th><th>Action</th></tr></thead>
+          <tbody id="tbl-drivers">
+    <tr>
+      <td class="id-cell">#1</td>
+      <td>Ravi</td>
+      <td><span class="chip">LIC123</span></td>
+      <td>9876543210</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteDriver(1)">Delete</button></td>
+    </tr>
+    <tr>
+      <td class="id-cell">#2</td>
+      <td>Kumar</td>
+      <td><span class="chip">LIC456</span></td>
+      <td>9123456780</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteDriver(2)">Delete</button></td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- VEHICLES -->
+  <div class="page" id="page-vehicles">
+    <div class="section-header">
+      <div><div class="page-title">Vehicles</div><div class="page-sub">Fleet management</div></div>
+    </div>
+    <div class="card" style="margin-bottom:28px">
+      <div class="card-header"><div class="card-title">➕ Add Vehicle</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Vehicle ID</label><input class="form-input" id="veh-id" type="number" placeholder="e.g. 103"></div>
+          <div class="form-group"><label class="form-label">Vehicle No</label><input class="form-input" id="veh-no" placeholder="e.g. TN03EF9012"></div>
+          <div class="form-group"><label class="form-label">Type</label>
+            <select class="form-input" id="veh-type"><option value="Bus">Bus</option><option value="Van">Van</option><option value="Minibus">Minibus</option><option value="Truck">Truck</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Capacity</label><input class="form-input" id="veh-cap" type="number" min="1" placeholder="e.g. 40"></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary" onclick="addVehicle()">Add Vehicle</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🚌 Vehicle List</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Vehicle No</th><th>Type</th><th>Capacity</th><th>Action</th></tr></thead>
+          <tbody id="tbl-vehicles">
+    <tr>
+      <td class="id-cell">#101</td>
+      <td><span class="chip">TN01AB1234</span></td>
+      <td><span style="color:#69f0ae">Bus</span></td>
+      <td>2</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteVehicle(101)">Delete</button></td>
+    </tr>
+    <tr>
+      <td class="id-cell">#102</td>
+      <td><span class="chip">TN02CD5678</span></td>
+      <td><span style="color:#40c4ff">Van</span></td>
+      <td>3</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteVehicle(102)">Delete</button></td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROUTES -->
+  <div class="page" id="page-routes">
+    <div class="section-header">
+      <div><div class="page-title">Routes</div><div class="page-sub">Source to destination paths</div></div>
+    </div>
+    <div class="card" style="margin-bottom:28px">
+      <div class="card-header"><div class="card-title">➕ Add Route</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Route ID</label><input class="form-input" id="rt-id" type="number" placeholder="e.g. 203"></div>
+          <div class="form-group"><label class="form-label">Source</label><input class="form-input" id="rt-src" placeholder="e.g. Salem"></div>
+          <div class="form-group"><label class="form-label">Destination</label><input class="form-input" id="rt-dst" placeholder="e.g. Vellore"></div>
+          <div class="form-group"><label class="form-label">Distance (km)</label><input class="form-input" id="rt-dist" type="number" placeholder="e.g. 180"></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary" onclick="addRoute()">Add Route</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🛣 Route List</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Source</th><th>→</th><th>Destination</th><th>Distance</th><th>Action</th></tr></thead>
+          <tbody id="tbl-routes">
+    <tr>
+      <td class="id-cell">#201</td>
+      <td>Chennai</td>
+      <td style="color:var(--accent)">→</td>
+      <td>Trichy</td>
+      <td><span class="chip">330 km</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteRoute(201)">Delete</button></td>
+    </tr>
+    <tr>
+      <td class="id-cell">#202</td>
+      <td>Madurai</td>
+      <td style="color:var(--accent)">→</td>
+      <td>Coimbatore</td>
+      <td><span class="chip">215 km</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteRoute(202)">Delete</button></td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRIPS -->
+  <div class="page" id="page-trips">
+    <div class="section-header">
+      <div><div class="page-title">Trips</div><div class="page-sub">Trip scheduling</div></div>
+    </div>
+    <div class="card" style="margin-bottom:28px">
+      <div class="card-header"><div class="card-title">➕ Schedule Trip</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Trip ID</label><input class="form-input" id="trp-id" type="number" placeholder="e.g. 303"></div>
+          <div class="form-group"><label class="form-label">Driver</label><select class="form-input" id="trp-drv"><option value="1">Ravi</option><option value="2">Kumar</option></select></div>
+          <div class="form-group"><label class="form-label">Vehicle</label><select class="form-input" id="trp-veh"><option value="101">TN01AB1234</option><option value="102">TN02CD5678</option></select></div>
+          <div class="form-group"><label class="form-label">Route</label><select class="form-input" id="trp-rt"><option value="201">Chennai</option><option value="202">Madurai</option></select></div>
+          <div class="form-group"><label class="form-label">Trip Date</label><input class="form-input" id="trp-date" type="date"></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary" onclick="addTrip()">Schedule Trip</button></div>
+      </div>
+    </div>
+    <div id="trips-list"><div class="trip-card">
+      <div class="trip-route">
+        <div class="route-line">Chennai <span class="arrow">→</span> Trichy</div>
+        <div class="trip-meta">Trip #301 · 2025-02-06</div>
+      </div>
+      <div class="trip-info">
+        <div class="trip-info-item"><div class="trip-info-label">Driver</div><div class="trip-info-val">Ravi</div></div>
+        <div class="trip-info-item"><div class="trip-info-label">Vehicle</div><div class="trip-info-val">TN01AB1234</div></div>
+        <div class="trip-info-item"><div class="trip-info-label">Dist</div><div class="trip-info-val">330 km</div></div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="deleteTrip(301)">Delete</button>
+    </div><div class="trip-card">
+      <div class="trip-route">
+        <div class="route-line">Madurai <span class="arrow">→</span> Coimbatore</div>
+        <div class="trip-meta">Trip #302 · 2025-02-07</div>
+      </div>
+      <div class="trip-info">
+        <div class="trip-info-item"><div class="trip-info-label">Driver</div><div class="trip-info-val">Kumar</div></div>
+        <div class="trip-info-item"><div class="trip-info-label">Vehicle</div><div class="trip-info-val">TN02CD5678</div></div>
+        <div class="trip-info-item"><div class="trip-info-label">Dist</div><div class="trip-info-val">215 km</div></div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="deleteTrip(302)">Delete</button>
+    </div></div>
+  </div>
+
+  <!-- PASSENGERS -->
+  <div class="page" id="page-passengers">
+    <div class="section-header">
+      <div><div class="page-title">Passengers</div><div class="page-sub">Passenger registry</div></div>
+    </div>
+    <div class="card" style="margin-bottom:28px">
+      <div class="card-header"><div class="card-title">➕ Add Passenger</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Passenger ID</label><input class="form-input" id="pax-id" type="number" placeholder="e.g. 3"></div>
+          <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="pax-name" placeholder="Full name"></div>
+          <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="pax-phone" placeholder="10 digit number"></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary" onclick="addPassenger()">Add Passenger</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">👥 Passenger List</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Action</th></tr></thead>
+          <tbody id="tbl-passengers">
+    <tr>
+      <td class="id-cell">#1</td>
+      <td>Arun</td>
+      <td>9000000001</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deletePassenger(1)">Delete</button></td>
+    </tr>
+    <tr>
+      <td class="id-cell">#2</td>
+      <td>Bala</td>
+      <td>9000000002</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deletePassenger(2)">Delete</button></td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOOKINGS -->
+  <div class="page" id="page-bookings">
+    <div class="section-header">
+      <div><div class="page-title">Bookings</div><div class="page-sub">Seat reservations</div></div>
+    </div>
+    <div class="card" style="margin-bottom:28px">
+      <div class="card-header"><div class="card-title">➕ New Booking</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Booking ID</label><input class="form-input" id="bk-id" type="number" placeholder="e.g. 3"></div>
+          <div class="form-group"><label class="form-label">Passenger</label><select class="form-input" id="bk-pax"><option value="1">Arun</option><option value="2">Bala</option></select></div>
+          <div class="form-group"><label class="form-label">Trip</label><select class="form-input" id="bk-trp"><option value="301">#301 Chennai→Trichy</option><option value="302">#302 Madurai→Coimbatore</option></select></div>
+          <div class="form-group"><label class="form-label">Seat No</label><input class="form-input" id="bk-seat" type="number" min="1" placeholder="e.g. 3"></div>
+          <div class="form-group"><label class="form-label">Booking Date</label><input class="form-input" id="bk-date" type="date"></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary" onclick="addBooking()">Confirm Booking</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🎫 All Bookings</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Booking ID</th><th>Passenger</th><th>Trip</th><th>Seat</th><th>Date</th><th>Action</th></tr></thead>
+          <tbody id="tbl-bookings"><tr>
+      <td class="id-cell">#1</td>
+      <td>Arun</td>
+      <td>Chennai → Trichy</td>
+      <td><span class="chip">Seat 1</span></td>
+      <td>2025-02-01</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteBooking(1)">Delete</button></td>
+    </tr><tr>
+      <td class="id-cell">#2</td>
+      <td>Bala</td>
+      <td>Chennai → Trichy</td>
+      <td><span class="chip">Seat 2</span></td>
+      <td>2025-02-01</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteBooking(2)">Delete</button></td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEMA -->
+  <div class="page" id="page-schema">
+    <div class="page-title">Database Schema</div>
+    <div class="page-sub">Entity-Relationship structure of the Transport Management System</div>
+    <div class="schema-grid">
+      <div class="schema-card">
+        <div class="schema-head"><div class="schema-name"><span style="color:var(--driver)">▸</span> Driver</div></div>
+        <div class="schema-body">
+          <div class="schema-row"><span class="col-name">driver_id</span><span class="col-type">INT</span><span class="col-key pk">PK</span></div>
+          <div class="schema-row"><span class="col-name">name</span><span class="col-type">VARCHAR(50)</span><span></span></div>
+          <div class="schema-row"><span class="col-name">license_no</span><span class="col-type">VARCHAR(20)</span><span class="col-key uq">UQ</span></div>
+          <div class="schema-row"><span class="col-name">phone</span><span class="col-type">VARCHAR(15)</span><span></span></div>
+        </div>
+      </div>
+      <div class="schema-card">
+        <div class="schema-head"><div class="schema-name"><span style="color:var(--vehicle)">▸</span> Vehicle</div></div>
+        <div class="schema-body">
+          <div class="schema-row"><span class="col-name">vehicle_id</span><span class="col-type">INT</span><span class="col-key pk">PK</span></div>
+          <div class="schema-row"><span class="col-name">vehicle_no</span><span class="col-type">VARCHAR(20)</span><span class="col-key uq">UQ</span></div>
+          <div class="schema-row"><span class="col-name">type</span><span class="col-type">VARCHAR(20)</span><span></span></div>
+          <div class="schema-row"><span class="col-name">capacity</span><span class="col-type">INT</span><span class="col-key" style="font-size:9px;padding:2px 5px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1)">CHK &gt;0</span></div>
+        </div>
+      </div>
+      <div class="schema-card">
+        <div class="schema-head"><div class="schema-name"><span style="color:var(--route)">▸</span> Route</div></div>
+        <div class="schema-body">
+          <div class="schema-row"><span class="col-name">route_id</span><span class="col-type">INT</span><span class="col-key pk">PK</span></div>
+          <div class="schema-row"><span class="col-name">source</span><span class="col-type">VARCHAR(50)</span><span></span></div>
+          <div class="schema-row"><span class="col-name">destination</span><span class="col-type">VARCHAR(50)</span><span></span></div>
+          <div class="schema-row"><span class="col-name">distance</span><span class="col-type">INT</span><span></span></div>
+        </div>
+      </div>
+      <div class="schema-card">
+        <div class="schema-head"><div class="schema-name"><span style="color:var(--trip)">▸</span> Trip</div></div>
+        <div class="schema-body">
+          <div class="schema-row"><span class="col-name">trip_id</span><span class="col-type">INT</span><span class="col-key pk">PK</span></div>
+          <div class="schema-row"><span class="col-name">driver_id</span><span class="col-type">INT</span><span class="col-key fk">FK</span></div>
+          <div class="schema-row"><span class="col-name">vehicle_id</span><span class="col-type">INT</span><span class="col-key fk">FK</span></div>
+          <div class="schema-row"><span class="col-name">route_id</span><span class="col-type">INT</span><span class="col-key fk">FK</span></div>
+          <div class="schema-row"><span class="col-name">trip_date</span><span class="col-type">DATE</span><span></span></div>
+        </div>
+      </div>
+      <div class="schema-card">
+        <div class="schema-head"><div class="schema-name"><span style="color:var(--passenger)">▸</span> Passenger</div></div>
+        <div class="schema-body">
+          <div class="schema-row"><span class="col-name">passenger_id</span><span class="col-type">INT</span><span class="col-key pk">PK</span></div>
+          <div class="schema-row"><span class="col-name">name</span><span class="col-type">VARCHAR(50)</span><span></span></div>
+          <div class="schema-row"><span class="col-name">phone</span><span class="col-type">VARCHAR(15)</span><span></span></div>
+        </div>
+      </div>
+      <div class="schema-card">
+        <div class="schema-head"><div class="schema-name"><span style="color:var(--booking)">▸</span> Booking</div></div>
+        <div class="schema-body">
+          <div class="schema-row"><span class="col-name">booking_id</span><span class="col-type">INT</span><span class="col-key pk">PK</span></div>
+          <div class="schema-row"><span class="col-name">passenger_id</span><span class="col-type">INT</span><span class="col-key fk">FK</span></div>
+          <div class="schema-row"><span class="col-name">trip_id</span><span class="col-type">INT</span><span class="col-key fk">FK</span></div>
+          <div class="schema-row"><span class="col-name">seat_no</span><span class="col-type">INT</span><span></span></div>
+          <div class="schema-row"><span class="col-name">booking_date</span><span class="col-type">DATE</span><span></span></div>
+          <div class="schema-row"><span class="col-name">(trip_id, seat_no)</span><span class="col-type">—</span><span class="col-key uq">UQ</span></div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+    <div class="card" style="margin-top:8px">
+      <div class="card-header"><div class="card-title">👁 TripDetails VIEW</div></div>
+      <div class="card-body">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Joins Trip ⟵ Driver, Vehicle, Route to produce a consolidated view.</p>
+        <div class="sql-box">
+          <div class="sql-toolbar"><div class="sql-dot" style="background:#ff5f57"></div><div class="sql-dot" style="background:#febc2e"></div><div class="sql-dot" style="background:#28c840"></div></div>
+          <div class="sql-code">
+<span class="kw">CREATE VIEW</span> TripDetails <span class="kw">AS</span><br>
+<span class="kw">SELECT</span> d.name <span class="kw">AS</span> driver, v.vehicle_no, r.source, r.destination, t.trip_date<br>
+<span class="kw">FROM</span> Trip t<br>
+<span class="kw">JOIN</span> Driver d <span class="kw">ON</span> t.driver_id = d.driver_id<br>
+<span class="kw">JOIN</span> Vehicle v <span class="kw">ON</span> t.vehicle_id = v.vehicle_id<br>
+<span class="kw">JOIN</span> Route r <span class="kw">ON</span> t.route_id = r.route_id;
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SQL VIEW -->
+  <div class="page" id="page-sql">
+    <div class="page-title">SQL Reference</div>
+    <div class="page-sub">Complete DDL + DML statements for this schema</div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header"><div class="card-title">📋 CREATE TABLES</div></div>
+      <div class="sql-box" style="border:none">
+        <div class="sql-toolbar"><div class="sql-dot" style="background:#ff5f57"></div><div class="sql-dot" style="background:#febc2e"></div><div class="sql-dot" style="background:#28c840"></div></div>
+        <div class="sql-code">
+<span class="cm">-- Driver Table</span><br>
+<span class="kw">CREATE TABLE</span> <span class="fn">Driver</span> (<br>
+&nbsp;&nbsp;driver_id <span class="kw">INT PRIMARY KEY</span>,<br>
+&nbsp;&nbsp;name <span class="kw">VARCHAR</span>(<span class="num">50</span>),<br>
+&nbsp;&nbsp;license_no <span class="kw">VARCHAR</span>(<span class="num">20</span>) <span class="kw">UNIQUE</span>,<br>
+&nbsp;&nbsp;phone <span class="kw">VARCHAR</span>(<span class="num">15</span>)<br>
+);<br><br>
+<span class="cm">-- Vehicle Table</span><br>
+<span class="kw">CREATE TABLE</span> <span class="fn">Vehicle</span> (<br>
+&nbsp;&nbsp;vehicle_id <span class="kw">INT PRIMARY KEY</span>,<br>
+&nbsp;&nbsp;vehicle_no <span class="kw">VARCHAR</span>(<span class="num">20</span>) <span class="kw">UNIQUE</span>,<br>
+&nbsp;&nbsp;type <span class="kw">VARCHAR</span>(<span class="num">20</span>),<br>
+&nbsp;&nbsp;capacity <span class="kw">INT CHECK</span> (capacity &gt; <span class="num">0</span>)<br>
+);<br><br>
+<span class="cm">-- Route Table</span><br>
+<span class="kw">CREATE TABLE</span> <span class="fn">Route</span> (<br>
+&nbsp;&nbsp;route_id <span class="kw">INT PRIMARY KEY</span>,<br>
+&nbsp;&nbsp;source <span class="kw">VARCHAR</span>(<span class="num">50</span>),<br>
+&nbsp;&nbsp;destination <span class="kw">VARCHAR</span>(<span class="num">50</span>),<br>
+&nbsp;&nbsp;distance <span class="kw">INT</span><br>
+);<br><br>
+<span class="cm">-- Trip Table</span><br>
+<span class="kw">CREATE TABLE</span> <span class="fn">Trip</span> (<br>
+&nbsp;&nbsp;trip_id <span class="kw">INT PRIMARY KEY</span>,<br>
+&nbsp;&nbsp;driver_id <span class="kw">INT</span>,<br>
+&nbsp;&nbsp;vehicle_id <span class="kw">INT</span>,<br>
+&nbsp;&nbsp;route_id <span class="kw">INT</span>,<br>
+&nbsp;&nbsp;trip_date <span class="kw">DATE</span>,<br>
+&nbsp;&nbsp;<span class="kw">FOREIGN KEY</span> (driver_id) <span class="kw">REFERENCES</span> <span class="fn">Driver</span>(driver_id),<br>
+&nbsp;&nbsp;<span class="kw">FOREIGN KEY</span> (vehicle_id) <span class="kw">REFERENCES</span> <span class="fn">Vehicle</span>(vehicle_id),<br>
+&nbsp;&nbsp;<span class="kw">FOREIGN KEY</span> (route_id) <span class="kw">REFERENCES</span> <span class="fn">Route</span>(route_id)<br>
+);<br><br>
+<span class="cm">-- Passenger Table</span><br>
+<span class="kw">CREATE TABLE</span> <span class="fn">Passenger</span> (<br>
+&nbsp;&nbsp;passenger_id <span class="kw">INT PRIMARY KEY</span>,<br>
+&nbsp;&nbsp;name <span class="kw">VARCHAR</span>(<span class="num">50</span>),<br>
+&nbsp;&nbsp;phone <span class="kw">VARCHAR</span>(<span class="num">15</span>)<br>
+);<br><br>
+<span class="cm">-- Booking Table</span><br>
+<span class="kw">CREATE TABLE</span> <span class="fn">Booking</span> (<br>
+&nbsp;&nbsp;booking_id <span class="kw">INT PRIMARY KEY</span>,<br>
+&nbsp;&nbsp;passenger_id <span class="kw">INT</span>,<br>
+&nbsp;&nbsp;trip_id <span class="kw">INT</span>,<br>
+&nbsp;&nbsp;seat_no <span class="kw">INT</span>,<br>
+&nbsp;&nbsp;booking_date <span class="kw">DATE</span>,<br>
+&nbsp;&nbsp;<span class="kw">UNIQUE</span> (trip_id, seat_no),<br>
+&nbsp;&nbsp;<span class="kw">FOREIGN KEY</span> (passenger_id) <span class="kw">REFERENCES</span> <span class="fn">Passenger</span>(passenger_id),<br>
+&nbsp;&nbsp;<span class="kw">FOREIGN KEY</span> (trip_id) <span class="kw">REFERENCES</span> <span class="fn">Trip</span>(trip_id)<br>
+);
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">📥 INSERT DATA</div></div>
+      <div class="sql-box" style="border:none">
+        <div class="sql-toolbar"><div class="sql-dot" style="background:#ff5f57"></div><div class="sql-dot" style="background:#febc2e"></div><div class="sql-dot" style="background:#28c840"></div></div>
+        <div class="sql-code">
+<span class="kw">INSERT INTO</span> <span class="fn">Driver</span> <span class="kw">VALUES</span> (<span class="num">1</span>, <span class="str">'Ravi'</span>, <span class="str">'LIC123'</span>, <span class="str">'9876543210'</span>);<br>
+<span class="kw">INSERT INTO</span> <span class="fn">Driver</span> <span class="kw">VALUES</span> (<span class="num">2</span>, <span class="str">'Kumar'</span>, <span class="str">'LIC456'</span>, <span class="str">'9123456780'</span>);<br><br>
+<span class="kw">INSERT INTO</span> <span class="fn">Vehicle</span> <span class="kw">VALUES</span> (<span class="num">101</span>, <span class="str">'TN01AB1234'</span>, <span class="str">'Bus'</span>, <span class="num">2</span>);<br>
+<span class="kw">INSERT INTO</span> <span class="fn">Vehicle</span> <span class="kw">VALUES</span> (<span class="num">102</span>, <span class="str">'TN02CD5678'</span>, <span class="str">'Van'</span>, <span class="num">3</span>);<br><br>
+<span class="kw">INSERT INTO</span> <span class="fn">Route</span> <span class="kw">VALUES</span> (<span class="num">201</span>, <span class="str">'Chennai'</span>, <span class="str">'Trichy'</span>, <span class="num">330</span>);<br>
+<span class="kw">INSERT INTO</span> <span class="fn">Route</span> <span class="kw">VALUES</span> (<span class="num">202</span>, <span class="str">'Madurai'</span>, <span class="str">'Coimbatore'</span>, <span class="num">215</span>);<br><br>
+<span class="kw">INSERT INTO</span> <span class="fn">Trip</span> <span class="kw">VALUES</span> (<span class="num">301</span>, <span class="num">1</span>, <span class="num">101</span>, <span class="num">201</span>, <span class="str">'2025-02-06'</span>);<br>
+<span class="kw">INSERT INTO</span> <span class="fn">Trip</span> <span class="kw">VALUES</span> (<span class="num">302</span>, <span class="num">2</span>, <span class="num">102</span>, <span class="num">202</span>, <span class="str">'2025-02-07'</span>);<br><br>
+<span class="kw">INSERT INTO</span> <span class="fn">Passenger</span> <span class="kw">VALUES</span> (<span class="num">1</span>, <span class="str">'Arun'</span>, <span class="str">'9000000001'</span>);<br>
+<span class="kw">INSERT INTO</span> <span class="fn">Passenger</span> <span class="kw">VALUES</span> (<span class="num">2</span>, <span class="str">'Bala'</span>, <span class="str">'9000000002'</span>);<br><br>
+<span class="kw">INSERT INTO</span> <span class="fn">Booking</span> <span class="kw">VALUES</span> (<span class="num">1</span>, <span class="num">1</span>, <span class="num">301</span>, <span class="num">1</span>, <span class="str">'2025-02-01'</span>);<br>
+<span class="kw">INSERT INTO</span> <span class="fn">Booking</span> <span class="kw">VALUES</span> (<span class="num">2</span>, <span class="num">2</span>, <span class="num">301</span>, <span class="num">2</span>, <span class="str">'2025-02-01'</span>);<br><br>
+<span class="cm">-- Queries</span><br>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="fn">Booking</span>;<br>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="fn">TripDetails</span>;
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── DATA STORE ───────────────────────────────────────────────────────────────
+const db = {
+  drivers: [
+    { driver_id: 1, name: 'Ravi', license_no: 'LIC123', phone: '9876543210' },
+    { driver_id: 2, name: 'Kumar', license_no: 'LIC456', phone: '9123456780' }
+  ],
+  vehicles: [
+    { vehicle_id: 101, vehicle_no: 'TN01AB1234', type: 'Bus', capacity: 2 },
+    { vehicle_id: 102, vehicle_no: 'TN02CD5678', type: 'Van', capacity: 3 }
+  ],
+  routes: [
+    { route_id: 201, source: 'Chennai', destination: 'Trichy', distance: 330 },
+    { route_id: 202, source: 'Madurai', destination: 'Coimbatore', distance: 215 }
+  ],
+  trips: [
+    { trip_id: 301, driver_id: 1, vehicle_id: 101, route_id: 201, trip_date: '2025-02-06' },
+    { trip_id: 302, driver_id: 2, vehicle_id: 102, route_id: 202, trip_date: '2025-02-07' }
+  ],
+  passengers: [
+    { passenger_id: 1, name: 'Arun', phone: '9000000001' },
+    { passenger_id: 2, name: 'Bala', phone: '9000000002' }
+  ],
+  bookings: [
+    { booking_id: 1, passenger_id: 1, trip_id: 301, seat_no: 1, booking_date: '2025-02-01' },
+    { booking_id: 2, passenger_id: 2, trip_id: 301, seat_no: 2, booking_date: '2025-02-01' }
+  ]
+};
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+function toast(msg, err = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (err ? ' error' : '') + ' show';
+  setTimeout(() => t.className = 'toast', 2800);
+}
+
+// ─── NAV ──────────────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  renderAll();
+}
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function getDriver(id) { return db.drivers.find(d => d.driver_id == id); }
+function getVehicle(id) { return db.vehicles.find(v => v.vehicle_id == id); }
+function getRoute(id) { return db.routes.find(r => r.route_id == id); }
+function getTrip(id) { return db.trips.find(t => t.trip_id == id); }
+function getPassenger(id) { return db.passengers.find(p => p.passenger_id == id); }
+
+function delBtn(cb) {
+  return `<button class="btn btn-danger btn-sm" onclick="${cb}">Delete</button>`;
+}
+
+// ─── RENDERS ─────────────────────────────────────────────────────────────────
+function renderDrivers() {
+  const tb = document.getElementById('tbl-drivers');
+  if (!tb) return;
+  tb.innerHTML = db.drivers.map(d => `
+    <tr>
+      <td class="id-cell">#${d.driver_id}</td>
+      <td>${d.name}</td>
+      <td><span class="chip">${d.license_no}</span></td>
+      <td>${d.phone}</td>
+      <td>${delBtn(`deleteDriver(${d.driver_id})`)}</td>
+    </tr>`).join('') || '<tr><td colspan="5" class="empty">No drivers found</td></tr>';
+}
+
+function renderVehicles() {
+  const tb = document.getElementById('tbl-vehicles');
+  if (!tb) return;
+  const typeColors = { Bus: '#69f0ae', Van: '#40c4ff', Minibus: '#f5a623', Truck: '#ff80ab' };
+  tb.innerHTML = db.vehicles.map(v => `
+    <tr>
+      <td class="id-cell">#${v.vehicle_id}</td>
+      <td><span class="chip">${v.vehicle_no}</span></td>
+      <td><span style="color:${typeColors[v.type]||'#aaa'}">${v.type}</span></td>
+      <td>${v.capacity}</td>
+      <td>${delBtn(`deleteVehicle(${v.vehicle_id})`)}</td>
+    </tr>`).join('') || '<tr><td colspan="5" class="empty">No vehicles</td></tr>';
+}
+
+function renderRoutes() {
+  const tb = document.getElementById('tbl-routes');
+  if (!tb) return;
+  tb.innerHTML = db.routes.map(r => `
+    <tr>
+      <td class="id-cell">#${r.route_id}</td>
+      <td>${r.source}</td>
+      <td style="color:var(--accent)">→</td>
+      <td>${r.destination}</td>
+      <td><span class="chip">${r.distance} km</span></td>
+      <td>${delBtn(`deleteRoute(${r.route_id})`)}</td>
+    </tr>`).join('') || '<tr><td colspan="6" class="empty">No routes</td></tr>';
+}
+
+function renderTrips() {
+  const el = document.getElementById('trips-list');
+  if (!el) return;
+  if (!db.trips.length) { el.innerHTML = '<div class="empty">No trips scheduled</div>'; return; }
+  el.innerHTML = db.trips.map(t => {
+    const d = getDriver(t.driver_id);
+    const v = getVehicle(t.vehicle_id);
+    const r = getRoute(t.route_id);
+    return `<div class="trip-card">
+      <div class="trip-route">
+        <div class="route-line">${r ? r.source : '?'} <span class="arrow">→</span> ${r ? r.destination : '?'}</div>
+        <div class="trip-meta">Trip #${t.trip_id} · ${t.trip_date}</div>
+      </div>
+      <div class="trip-info">
+        <div class="trip-info-item"><div class="trip-info-label">Driver</div><div class="trip-info-val">${d ? d.name : '?'}</div></div>
+        <div class="trip-info-item"><div class="trip-info-label">Vehicle</div><div class="trip-info-val">${v ? v.vehicle_no : '?'}</div></div>
+        <div class="trip-info-item"><div class="trip-info-label">Dist</div><div class="trip-info-val">${r ? r.distance + ' km' : '?'}</div></div>
+      </div>
+      ${delBtn(`deleteTrip(${t.trip_id})`)}
+    </div>`;
+  }).join('');
+}
+
+function renderPassengers() {
+  const tb = document.getElementById('tbl-passengers');
+  if (!tb) return;
+  tb.innerHTML = db.passengers.map(p => `
+    <tr>
+      <td class="id-cell">#${p.passenger_id}</td>
+      <td>${p.name}</td>
+      <td>${p.phone}</td>
+      <td>${delBtn(`deletePassenger(${p.passenger_id})`)}</td>
+    </tr>`).join('') || '<tr><td colspan="4" class="empty">No passengers</td></tr>';
+}
+
+function renderBookings() {
+  const tb = document.getElementById('tbl-bookings');
+  if (!tb) return;
+  tb.innerHTML = db.bookings.map(b => {
+    const p = getPassenger(b.passenger_id);
+    const t = getTrip(b.trip_id);
+    const r = t ? getRoute(t.route_id) : null;
+    return `<tr>
+      <td class="id-cell">#${b.booking_id}</td>
+      <td>${p ? p.name : '?'}</td>
+      <td>${r ? r.source + ' → ' + r.destination : '#' + b.trip_id}</td>
+      <td><span class="chip">Seat ${b.seat_no}</span></td>
+      <td>${b.booking_date}</td>
+      <td>${delBtn(`deleteBooking(${b.booking_id})`)}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" class="empty">No bookings</td></tr>';
+}
+
+function renderDashboard() {
+  document.getElementById('stat-drivers').textContent = db.drivers.length;
+  document.getElementById('stat-vehicles').textContent = db.vehicles.length;
+  document.getElementById('stat-routes').textContent = db.routes.length;
+  document.getElementById('stat-trips').textContent = db.trips.length;
+  document.getElementById('stat-passengers').textContent = db.passengers.length;
+  document.getElementById('stat-bookings').textContent = db.bookings.length;
+
+  const dt = document.getElementById('dash-trips');
+  if (dt) dt.innerHTML = db.trips.map(t => {
+    const d = getDriver(t.driver_id), v = getVehicle(t.vehicle_id), r = getRoute(t.route_id);
+    return `<tr><td>${d?d.name:'?'}</td><td>${v?v.vehicle_no:'?'}</td><td>${r?r.source:'?'}</td><td>${r?r.destination:'?'}</td><td>${t.trip_date}</td></tr>`;
+  }).join('');
+
+  const db2 = document.getElementById('dash-bookings');
+  if (db2) db2.innerHTML = db.bookings.map(b => {
+    const p = getPassenger(b.passenger_id);
+    return `<tr><td class="id-cell">#${b.booking_id}</td><td>${p?p.name:'?'}</td><td>#${b.trip_id}</td><td>${b.seat_no}</td><td>${b.booking_date}</td></tr>`;
+  }).join('');
+}
+
+function populateSelects() {
+  const sel = (id, items, val, lbl) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = items.map(i => `<option value="${i[val]}">${i[lbl]}</option>`).join('');
+  };
+  sel('trp-drv', db.drivers, 'driver_id', 'name');
+  sel('trp-veh', db.vehicles, 'vehicle_id', 'vehicle_no');
+  sel('trp-rt', db.routes, 'route_id', 'source');
+  sel('bk-pax', db.passengers, 'passenger_id', 'name');
+  const bkTrp = document.getElementById('bk-trp');
+  if (bkTrp) bkTrp.innerHTML = db.trips.map(t => {
+    const r = getRoute(t.route_id);
+    return `<option value="${t.trip_id}">#${t.trip_id} ${r?r.source+'→'+r.destination:''}</option>`;
+  }).join('');
+}
+
+function renderAll() {
+  renderDashboard();
+  renderDrivers();
+  renderVehicles();
+  renderRoutes();
+  renderTrips();
+  renderPassengers();
+  renderBookings();
+  populateSelects();
+}
+
+// ─── CRUD ─────────────────────────────────────────────────────────────────────
+function addDriver() {
+  const id = +document.getElementById('drv-id').value;
+  const name = document.getElementById('drv-name').value.trim();
+  const lic = document.getElementById('drv-lic').value.trim();
+  const phone = document.getElementById('drv-phone').value.trim();
+  if (!id || !name || !lic || !phone) { toast('All fields are required', true); return; }
+  if (db.drivers.find(d => d.driver_id === id)) { toast('Driver ID already exists', true); return; }
+  db.drivers.push({ driver_id: id, name, license_no: lic, phone });
+  ['drv-id','drv-name','drv-lic','drv-phone'].forEach(i => document.getElementById(i).value = '');
+  toast('✓ Driver added successfully');
+  renderAll();
+}
+function deleteDriver(id) {
+  db.drivers = db.drivers.filter(d => d.driver_id !== id);
+  toast('Driver deleted');
+  renderAll();
+}
+
+function addVehicle() {
+  const id = +document.getElementById('veh-id').value;
+  const no = document.getElementById('veh-no').value.trim();
+  const type = document.getElementById('veh-type').value;
+  const cap = +document.getElementById('veh-cap').value;
+  if (!id || !no || cap < 1) { toast('All fields required; capacity must be > 0', true); return; }
+  if (db.vehicles.find(v => v.vehicle_id === id)) { toast('Vehicle ID exists', true); return; }
+  db.vehicles.push({ vehicle_id: id, vehicle_no: no, type, capacity: cap });
+  ['veh-id','veh-no','veh-cap'].forEach(i => document.getElementById(i).value = '');
+  toast('✓ Vehicle added');
+  renderAll();
+}
+function deleteVehicle(id) { db.vehicles = db.vehicles.filter(v => v.vehicle_id !== id); toast('Vehicle deleted'); renderAll(); }
+
+function addRoute() {
+  const id = +document.getElementById('rt-id').value;
+  const src = document.getElementById('rt-src').value.trim();
+  const dst = document.getElementById('rt-dst').value.trim();
+  const dist = +document.getElementById('rt-dist').value;
+  if (!id || !src || !dst || !dist) { toast('All fields required', true); return; }
+  if (db.routes.find(r => r.route_id === id)) { toast('Route ID exists', true); return; }
+  db.routes.push({ route_id: id, source: src, destination: dst, distance: dist });
+  ['rt-id','rt-src','rt-dst','rt-dist'].forEach(i => document.getElementById(i).value = '');
+  toast('✓ Route added');
+  renderAll();
+}
+function deleteRoute(id) { db.routes = db.routes.filter(r => r.route_id !== id); toast('Route deleted'); renderAll(); }
+
+function addTrip() {
+  const id = +document.getElementById('trp-id').value;
+  const drv = +document.getElementById('trp-drv').value;
+  const veh = +document.getElementById('trp-veh').value;
+  const rt = +document.getElementById('trp-rt').value;
+  const date = document.getElementById('trp-date').value;
+  if (!id || !drv || !veh || !rt || !date) { toast('All fields required', true); return; }
+  if (db.trips.find(t => t.trip_id === id)) { toast('Trip ID exists', true); return; }
+  db.trips.push({ trip_id: id, driver_id: drv, vehicle_id: veh, route_id: rt, trip_date: date });
+  document.getElementById('trp-id').value = '';
+  document.getElementById('trp-date').value = '';
+  toast('✓ Trip scheduled');
+  renderAll();
+}
+function deleteTrip(id) { db.trips = db.trips.filter(t => t.trip_id !== id); toast('Trip deleted'); renderAll(); }
+
+function addPassenger() {
+  const id = +document.getElementById('pax-id').value;
+  const name = document.getElementById('pax-name').value.trim();
+  const phone = document.getElementById('pax-phone').value.trim();
+  if (!id || !name || !phone) { toast('All fields required', true); return; }
+  if (db.passengers.find(p => p.passenger_id === id)) { toast('Passenger ID exists', true); return; }
+  db.passengers.push({ passenger_id: id, name, phone });
+  ['pax-id','pax-name','pax-phone'].forEach(i => document.getElementById(i).value = '');
+  toast('✓ Passenger added');
+  renderAll();
+}
+function deletePassenger(id) { db.passengers = db.passengers.filter(p => p.passenger_id !== id); toast('Passenger deleted'); renderAll(); }
+
+function addBooking() {
+  const id = +document.getElementById('bk-id').value;
+  const pax = +document.getElementById('bk-pax').value;
+  const trp = +document.getElementById('bk-trp').value;
+  const seat = +document.getElementById('bk-seat').value;
+  const date = document.getElementById('bk-date').value;
+  if (!id || !pax || !trp || !seat || !date) { toast('All fields required', true); return; }
+  if (db.bookings.find(b => b.booking_id === id)) { toast('Booking ID exists', true); return; }
+  // UNIQUE constraint: trip_id + seat_no
+  if (db.bookings.find(b => b.trip_id === trp && b.seat_no === seat)) {
+    toast('UNIQUE violation: Seat already booked on this trip', true); return;
+  }
+  // Check capacity
+  const vehicle = db.vehicles.find(v => { const t = getTrip(trp); return t && v.vehicle_id === t.vehicle_id; });
+  const seatsBooked = db.bookings.filter(b => b.trip_id === trp).length;
+  if (vehicle && seatsBooked >= vehicle.capacity) { toast('Vehicle at full capacity!', true); return; }
+
+  db.bookings.push({ booking_id: id, passenger_id: pax, trip_id: trp, seat_no: seat, booking_date: date });
+  ['bk-id','bk-seat','bk-date'].forEach(i => document.getElementById(i).value = '');
+  toast('✓ Booking confirmed');
+  renderAll();
+}
+function deleteBooking(id) { db.bookings = db.bookings.filter(b => b.booking_id !== id); toast('Booking cancelled'); renderAll(); }
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderAll();
+</script>
+
+
+</body></html>
